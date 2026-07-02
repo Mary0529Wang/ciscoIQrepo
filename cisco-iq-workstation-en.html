@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cisco IQ Workstation</title>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --surface: #1a2332;
+      --surface-2: #243044;
+      --border: #2d3f56;
+      --text: #e8edf4;
+      --text-muted: #8fa3bc;
+      --accent: #049fd9;
+      --accent-dim: rgba(4, 159, 217, 0.15);
+      --success: #3dba6a;
+      --warning: #e8a838;
+      --tier-basic: #6b8cae;
+      --tier-standard: #049fd9;
+      --tier-signature: #7c5cbf;
+      --sidebar-w: 260px;
+      --radius: 8px;
+      --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    .layout {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      width: var(--sidebar-w);
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      overflow-y: auto;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .brand {
+      padding: 1.25rem 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .brand h1 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--accent);
+      letter-spacing: -0.02em;
+    }
+
+    .brand p {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 0.25rem;
+    }
+
+    .nav { padding: 0.75rem 0.5rem; flex: 1; }
+
+    .nav-section {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      padding: 0.75rem 0.75rem 0.35rem;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.55rem 0.75rem;
+      margin: 0.1rem 0.25rem;
+      border-radius: var(--radius);
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 0.875rem;
+      border: none;
+      background: none;
+      width: calc(100% - 0.5rem);
+      text-align: left;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .nav-item:hover { background: var(--surface-2); color: var(--text); }
+    .nav-item.active { background: var(--accent-dim); color: var(--accent); font-weight: 500; }
+
+    .nav-icon {
+      width: 18px;
+      text-align: center;
+      font-size: 0.8rem;
+      opacity: 0.7;
+    }
+
+    .search-box {
+      padding: 0.75rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 0.5rem 0.75rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-size: 0.8rem;
+    }
+
+    .search-box input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .main {
+      margin-left: var(--sidebar-w);
+      flex: 1;
+      padding: 2rem 2.5rem;
+      max-width: 1100px;
+    }
+
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    .page-header { margin-bottom: 2rem; }
+
+    .page-header h2 {
+      font-size: 1.75rem;
+      font-weight: 600;
+      letter-spacing: -0.03em;
+      margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      max-width: 640px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 1rem;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      transition: border-color 0.15s;
+    }
+
+    .card:hover { border-color: var(--accent); }
+
+    .card h3 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 0.35rem;
+    }
+
+    .card .meta {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-bottom: 0.75rem;
+    }
+
+    .card p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 1rem;
+    }
+
+    .card-actions {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.45rem 0.85rem;
+      font-size: 0.8rem;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      color: var(--text);
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.15s, border-color 0.15s;
+    }
+
+    .btn:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .btn-primary:hover { background: #0388b8; color: #fff; }
+    .btn-ghost { background: transparent; }
+
+    .stat-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+    }
+
+    .stat .label { font-size: 0.75rem; color: var(--text-muted); }
+    .stat .value { font-size: 1.5rem; font-weight: 600; color: var(--accent); margin-top: 0.25rem; }
+
+    .section-title {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin: 2rem 0 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .tier-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+
+    @media (max-width: 900px) {
+      .tier-cards { grid-template-columns: 1fr; }
+    }
+
+    .tier-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      border-top: 3px solid;
+    }
+
+    .tier-card.basic { border-top-color: var(--tier-basic); }
+    .tier-card.standard { border-top-color: var(--tier-standard); }
+    .tier-card.signature { border-top-color: var(--tier-signature); }
+
+    .tier-card h3 { font-size: 1rem; margin-bottom: 0.25rem; }
+    .tier-card .tagline { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1rem; font-style: italic; }
+
+    .tier-card ul {
+      list-style: none;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .tier-card li {
+      padding: 0.3rem 0;
+      padding-left: 1rem;
+      position: relative;
+    }
+
+    .tier-card li::before {
+      content: "·";
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+    }
+
+    .app-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 1rem;
+    }
+
+    .app-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+    }
+
+    .app-card h4 { font-size: 0.95rem; margin-bottom: 0.5rem; color: var(--accent); }
+    .app-card p { font-size: 0.82rem; color: var(--text-muted); }
+
+    .deploy-modes {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+    }
+
+    @media (max-width: 768px) {
+      .deploy-modes { grid-template-columns: 1fr; }
+    }
+
+    .faq-list { display: flex; flex-direction: column; gap: 0.5rem; }
+
+    .faq-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .faq-q {
+      width: 100%;
+      padding: 1rem 1.25rem;
+      background: none;
+      border: none;
+      color: var(--text);
+      font-size: 0.9rem;
+      font-weight: 500;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .faq-q:hover { background: var(--surface-2); }
+
+    .faq-q .chevron {
+      color: var(--text-muted);
+      transition: transform 0.2s;
+      flex-shrink: 0;
+    }
+
+    .faq-item.open .faq-q .chevron { transform: rotate(180deg); }
+
+    .faq-a {
+      display: none;
+      padding: 0 1.25rem 1rem;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.7;
+    }
+
+    .faq-item.open .faq-a { display: block; }
+
+    .faq-tag {
+      display: inline-block;
+      font-size: 0.65rem;
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+      background: var(--surface-2);
+      color: var(--text-muted);
+      margin-right: 0.5rem;
+      vertical-align: middle;
+    }
+
+    .checklist { display: flex; flex-direction: column; gap: 0.5rem; }
+
+    .check-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      padding: 0.85rem 1rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+
+    .check-item:hover { border-color: var(--accent); }
+    .check-item.done { opacity: 0.6; }
+    .check-item.done .check-label { text-decoration: line-through; }
+
+    .check-item input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      margin-top: 2px;
+      accent-color: var(--accent);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .check-label { font-size: 0.9rem; }
+    .check-desc { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.2rem; }
+
+    .progress-bar {
+      height: 6px;
+      background: var(--surface-2);
+      border-radius: 3px;
+      margin-bottom: 1.5rem;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 3px;
+      transition: width 0.3s;
+    }
+
+    .notes-area {
+      width: 100%;
+      min-height: 320px;
+      padding: 1rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 0.9rem;
+      resize: vertical;
+      line-height: 1.7;
+    }
+
+    .notes-area:focus { outline: none; border-color: var(--accent); }
+
+    .notes-hint {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 0.5rem;
+    }
+
+    .callout {
+      background: var(--accent-dim);
+      border: 1px solid rgba(4, 159, 217, 0.3);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.5rem;
+      font-size: 0.85rem;
+    }
+
+    .callout strong { color: var(--accent); }
+
+    .search-results {
+      position: fixed;
+      top: 0;
+      left: var(--sidebar-w);
+      right: 0;
+      bottom: 0;
+      background: rgba(15, 20, 25, 0.95);
+      z-index: 200;
+      padding: 2rem;
+      overflow-y: auto;
+      display: none;
+    }
+
+    .search-results.visible { display: block; }
+
+    .search-results h3 { margin-bottom: 1rem; }
+
+    .search-hit {
+      padding: 1rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 0.5rem;
+      cursor: pointer;
+    }
+
+    .search-hit:hover { border-color: var(--accent); }
+    .search-hit .hit-type { font-size: 0.7rem; color: var(--accent); text-transform: uppercase; }
+    .search-hit .hit-title { font-weight: 500; margin: 0.25rem 0; }
+    .search-hit .hit-snippet { font-size: 0.8rem; color: var(--text-muted); }
+
+    .close-search {
+      position: absolute;
+      top: 1.5rem;
+      right: 2rem;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.4rem 0.8rem;
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+
+    .link-star {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 1rem;
+      padding: 0.25rem;
+    }
+
+    .link-star.favorited { color: var(--warning); }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.2s;
+      }
+      .sidebar.open { transform: translateX(0); }
+      .main { margin-left: 0; padding: 1.25rem; }
+      .search-results { left: 0; }
+      .menu-toggle {
+        display: block;
+        position: fixed;
+        top: 1rem;
+        left: 1rem;
+        z-index: 150;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        color: var(--text);
+        padding: 0.5rem 0.75rem;
+        border-radius: var(--radius);
+        cursor: pointer;
+      }
+    }
+
+    .menu-toggle { display: none; }
+
+    .toc-list {
+      list-style: none;
+      columns: 2;
+      column-gap: 2rem;
+      font-size: 0.82rem;
+    }
+
+    @media (max-width: 600px) { .toc-list { columns: 1; } }
+
+    .toc-list li {
+      padding: 0.25rem 0;
+      break-inside: avoid;
+    }
+
+    .toc-list a {
+      color: var(--text-muted);
+      text-decoration: none;
+    }
+
+    .toc-list a:hover { color: var(--accent); }
+
+    .lang-switch {
+      padding: 0.75rem 1rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .lang-switch a {
+      display: block;
+      text-align: center;
+      padding: 0.45rem;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      transition: border-color 0.15s, color 0.15s;
+    }
+
+    .lang-switch a:hover { border-color: var(--accent); color: var(--accent); }
+  </style>
+</head>
+<body>
+  <button class="menu-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')">Menu</button>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">
+        <h1>Cisco IQ</h1>
+        <p>One-stop learning hub · APJC</p>
+      </div>
+      <nav class="nav">
+        <div class="nav-section">Workspace</div>
+        <button class="nav-item active" data-panel="home"><span class="nav-icon">◉</span> Overview</button>
+        <button class="nav-item" data-panel="links"><span class="nav-icon">↗</span> Quick Links</button>
+        <button class="nav-item" data-panel="learn"><span class="nav-icon">◎</span> Learning Path</button>
+        <div class="nav-section">Knowledge</div>
+        <button class="nav-item" data-panel="concepts"><span class="nav-icon">◇</span> Core Concepts</button>
+        <button class="nav-item" data-panel="faq"><span class="nav-icon">?</span> FAQ</button>
+        <button class="nav-item" data-panel="docs"><span class="nav-icon">▤</span> Documentation</button>
+        <div class="nav-section">Personal</div>
+        <button class="nav-item" data-panel="notes"><span class="nav-icon">✎</span> My Notes</button>
+        <button class="nav-item" data-panel="favorites"><span class="nav-icon">★</span> Favorites</button>
+      </nav>
+      <div class="search-box">
+        <input type="search" id="globalSearch" placeholder="Search FAQ, links, concepts…" autocomplete="off">
+      </div>
+      <div class="lang-switch">
+        <a href="cisco-iq-workstation.html">中文版</a>
+      </div>
+    </aside>
+
+    <main class="main">
+      <!-- HOME -->
+      <section class="panel active" id="panel-home">
+        <div class="page-header">
+          <h2>Cisco IQ Workstation</h2>
+          <p>APJC dashboards, official docs, playbook, and community resources in one place — learn Cisco IQ systematically and find tools fast.</p>
+        </div>
+
+        <div class="callout">
+          <strong>Reminder:</strong> Join the Global Webex Space for IQ process support and Q&amp;A. Everyone involved in the IQ process should be in this space.
+        </div>
+
+        <div class="stat-row">
+          <div class="stat"><div class="label">Core Apps</div><div class="value">4</div></div>
+          <div class="stat"><div class="label">Support Tiers</div><div class="value">3</div></div>
+          <div class="stat"><div class="label">Deploy Modes</div><div class="value">3</div></div>
+          <div class="stat"><div class="label">Learning Steps</div><div class="value" id="learnProgress">0%</div></div>
+        </div>
+
+        <div class="section-title">Quick Start</div>
+        <div class="grid-2" id="homeQuickLinks"></div>
+
+        <div class="section-title">What is Cisco IQ?</div>
+        <div class="card">
+          <p>Cisco IQ is the customer-facing, AI-powered digital experience that connects the full customer journey with Cisco Services. It unifies real-time insights, assessments, troubleshooting, learning, automation, and the AI Assistant in a single interface — helping customers plan, deploy, manage, secure, and optimize their IT environments.</p>
+          <p style="margin-top:0.75rem">Cisco IQ is available via SaaS today; On-Prem (Tethered / Air-Gapped) modes are coming soon. <strong style="color:var(--text)">Customers with a valid Cisco Support contract can use it at no additional cost.</strong></p>
+        </div>
+      </section>
+
+      <!-- LINKS -->
+      <section class="panel" id="panel-links">
+        <div class="page-header">
+          <h2>Quick Links</h2>
+          <p>APJC dashboards, Program Team views, playbook, community, and training materials — all in one place.</p>
+        </div>
+        <div id="linkCards"></div>
+      </section>
+
+      <!-- LEARN -->
+      <section class="panel" id="panel-learn">
+        <div class="page-header">
+          <h2>Learning Path</h2>
+          <p>Follow the recommended sequence to learn Cisco IQ. Progress is saved locally in your browser.</p>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+        <div class="checklist" id="learnChecklist"></div>
+      </section>
+
+      <!-- CONCEPTS -->
+      <section class="panel" id="panel-concepts">
+        <div class="page-header">
+          <h2>Core Concepts</h2>
+          <p>Quick reference for applications, support tiers, and deployment modes.</p>
+        </div>
+
+        <div class="section-title">Four Core Applications</div>
+        <div class="app-grid">
+          <div class="app-card">
+            <h4>Assets</h4>
+            <p>Dynamic asset inventory with AI-driven risk insights. Includes Inventory, EOL, Service Contracts, LDOS Dashboard, and more.</p>
+          </div>
+          <div class="app-card">
+            <h4>Assessments</h4>
+            <p>Intelligent security advisories, device hardening, configuration best-practice assessments, and actionable recommendations.</p>
+          </div>
+          <div class="app-card">
+            <h4>Support</h4>
+            <p>Simplified case creation, case summarization, and intelligent case management — deeply integrated with TAC workflows.</p>
+          </div>
+          <div class="app-card">
+            <h4>AI Assistant</h4>
+            <p>Conversational interface for queries, analysis, synthesis, self-serve troubleshooting, and report generation.</p>
+          </div>
+        </div>
+
+        <div class="section-title">Support Tiers</div>
+        <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:1rem">Capabilities are cumulative: Signature includes all Standard features; Standard includes all Basic features. Advanced Insights require telemetry via Cisco IQ Link, Intersight, Meraki, SD-WAN Manager, or Webex Control Hub.</p>
+        <div class="tier-cards">
+          <div class="tier-card basic">
+            <h3>Basic</h3>
+            <div class="tagline">Know what you have</div>
+            <ul>
+              <li>Asset Inventory / EOL Reports</li>
+              <li>Service Coverage Reports</li>
+              <li>LDOS Dashboard</li>
+              <li>Security Advisories / Field Notices</li>
+              <li>Case Management</li>
+              <li>Self-serve Troubleshooting</li>
+            </ul>
+          </div>
+          <div class="tier-card standard">
+            <h3>Standard</h3>
+            <div class="tagline">Prioritize for operational resilience</div>
+            <ul>
+              <li>EOL / LDOS / Coverage Insights</li>
+              <li>Asset Criticality Insights</li>
+              <li>Asset Tagging</li>
+              <li>Security Advisory Insights</li>
+              <li>Security Hardening Insights</li>
+              <li>Configuration Insights</li>
+            </ul>
+          </div>
+          <div class="tier-card signature">
+            <h3>Signature</h3>
+            <div class="tagline">Accelerate operational excellence</div>
+            <ul>
+              <li>Configuration Recommendations</li>
+              <li>Security Hardening Recommendations</li>
+              <li>Dedicated expert team &amp; SLA guarantees</li>
+              <li>Proactive security hardening &amp; root-cause elimination</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="section-title">Deployment Modes</div>
+        <div class="deploy-modes">
+          <div class="card">
+            <h3>SaaS</h3>
+            <p>Cloud-first, rapid deployment. Deploy on-prem Cisco IQ Link as a secure bridge for optimal AI insights.</p>
+          </div>
+          <div class="card">
+            <h3>On-Prem Tethered</h3>
+            <p>Data stays on-premises; tethered connection delivers cloud updates and new features — security plus convenience.</p>
+          </div>
+          <div class="card">
+            <h3>On-Prem Air-Gapped</h3>
+            <p>Fully offline for highly regulated industries. All updates are manual; no external network connectivity.</p>
+          </div>
+        </div>
+
+        <div class="section-title">Cisco IQ Link</div>
+        <div class="card">
+          <p>Cisco IQ Link is a VM component deployed in the customer's on-premises network for automated device discovery and telemetry collection. It can connect to Catalyst Center. Cisco IQ Connector is the collection component inside IQ Link — integrated but distinct: Link provides the secure channel between SaaS and on-prem environments.</p>
+          <p style="margin-top:0.75rem"><strong style="color:var(--text)">Collector is optional:</strong> Initial inventory can be built from contract data alone; advanced analytics require IQ Link or direct product telemetry.</p>
+        </div>
+
+        <div class="section-title">Admin Onboarding — Three Steps</div>
+        <div class="grid-3">
+          <div class="card"><h3>1. Connect Cloud Products</h3><p>Link Intersight, Meraki, SD-WAN, Webex, etc. for personalized insights in minutes.</p></div>
+          <div class="card"><h3>2. Add Service Contracts</h3><p>Consolidate team contracts and cover assets not connected via telemetry.</p></div>
+          <div class="card"><h3>3. Configure IQ Link</h3><p>Connect on-prem devices and unlock full AI insight capabilities.</p></div>
+        </div>
+      </section>
+
+      <!-- FAQ -->
+      <section class="panel" id="panel-faq">
+        <div class="page-header">
+          <h2>FAQ</h2>
+          <p>Excerpted from the official FAQ (CX225779). Click to expand. Use the sidebar search to find topics quickly.</p>
+        </div>
+        <div class="faq-list" id="faqList"></div>
+      </section>
+
+      <!-- DOCS -->
+      <section class="panel" id="panel-docs">
+        <div class="page-header">
+          <h2>Documentation</h2>
+          <p>Getting Started Guide table of contents and external document links.</p>
+        </div>
+        <div class="grid-2" id="docLinks"></div>
+        <div class="section-title">Getting Started Guide — Table of Contents</div>
+        <div class="card">
+          <ul class="toc-list">
+            <li><a href="https://www.cisco.com/c/en/us/support/docs/cx/cisco-iq/getting-started-guide/cx225778-cisco-iq-getting-started-guide.html" target="_blank" rel="noopener">Introduction</a></li>
+            <li><a href="#" onclick="return false">Onboarding — Account creation / CX Cloud migration / Login</a></li>
+            <li><a href="#" onclick="return false">Getting Started — Support Tiers / Admin &amp; user journeys</a></li>
+            <li><a href="#" onclick="return false">Dashboards — LDOS Dashboard</a></li>
+            <li><a href="#" onclick="return false">Reports — Generate / customize / versioning</a></li>
+            <li><a href="#" onclick="return false">System Settings — Users / resource groups / Data Connectors</a></li>
+            <li><a href="#" onclick="return false">Assets Application</a></li>
+            <li><a href="#" onclick="return false">Assessments Application</a></li>
+            <li><a href="#" onclick="return false">Support Application</a></li>
+            <li><a href="#" onclick="return false">AI Assistant &amp; Prompts</a></li>
+          </ul>
+          <p style="margin-top:1rem;font-size:0.8rem;color:var(--text-muted)">For full chapters, open the official Getting Started Guide link above.</p>
+        </div>
+      </section>
+
+      <!-- NOTES -->
+      <section class="panel" id="panel-notes">
+        <div class="page-header">
+          <h2>My Notes</h2>
+          <p>Capture learnings, customer scenarios, and to-dos — auto-saved locally.</p>
+        </div>
+        <textarea class="notes-area" id="notesArea" placeholder="Write your Cisco IQ notes here…&#10;&#10;Examples:&#10;- Customer A onboarding steps&#10;- IQ Link deployment notes&#10;- APJC process questions"></textarea>
+        <p class="notes-hint">Notes are stored only in your browser (localStorage) and are not uploaded anywhere.</p>
+      </section>
+
+      <!-- FAVORITES -->
+      <section class="panel" id="panel-favorites">
+        <div class="page-header">
+          <h2>Favorites</h2>
+          <p>Star links on the Quick Links page to save them here.</p>
+        </div>
+        <div id="favoritesList" class="grid-2"></div>
+      </section>
+    </main>
+  </div>
+
+  <div class="search-results" id="searchResults">
+    <button class="close-search" onclick="closeSearch()">Close (Esc)</button>
+    <h3>Search Results</h3>
+    <div id="searchHits"></div>
+  </div>
+
+  <script>
+    const LINKS = [
+      {
+        id: 'apjc-dashboard',
+        title: 'APJC Dashboard',
+        owner: 'Peter Leung',
+        category: 'Dashboards',
+        desc: 'APJC regional Cisco IQ operations dashboard — APJC Scale & Human-in-the-Loop metrics.',
+        url: 'https://wwwin-github.cisco.com/pages/peteleun/APJC-CISCO-IQ/Cisco%20IQ%20Dashboard%20APJC%20v1.3.html',
+        priority: true
+      },
+      {
+        id: 'program-dashboard',
+        title: 'Program Team Dashboard',
+        owner: 'Eran',
+        category: 'Dashboards',
+        desc: 'Tableau Program Team global view — APJC Scale Human-in-the-Loop data.',
+        url: 'https://prod-useast-b.online.tableau.com/#/site/cisco-tableau-online/views/CiscoIQ/Dashboard/3e305273-fc65-4c04-946f-3ca4d661b1a0/APJC-ScaleHumanintheLoop?:iid=1',
+        priority: true
+      },
+      {
+        id: 'apjc-website',
+        title: 'APJC Cisco IQ Portal',
+        owner: 'CX APJC Acceleration',
+        category: 'APJC Resources',
+        desc: 'Central portal for all APJC Cisco IQ information and resources.',
+        url: 'https://wwwin-github.cisco.com/pages/CX-APJC-Acceleration/CiscoIQ/',
+        priority: true
+      },
+      {
+        id: 'webex-space',
+        title: 'Global Webex Space',
+        owner: 'IQ Community',
+        category: 'Community',
+        desc: 'Join for IQ support and Q&A. All IQ process participants should join this space.',
+        url: 'https://eurl.io/#UrvCTrAVu',
+        priority: true
+      },
+      {
+        id: 'playbook',
+        title: 'Cisco IQ Playbook',
+        owner: 'Program Team',
+        category: 'Process Docs',
+        desc: 'IQ process playbook published on Confluence.',
+        url: 'https://ciscoteams.atlassian.net/wiki/x/xoAkVw',
+        priority: true
+      },
+      {
+        id: 'getting-started',
+        title: 'Getting Started Guide',
+        owner: 'Cisco Docs',
+        category: 'Official Docs',
+        desc: 'CX225778 — Full getting started guide: Onboarding, apps, System Settings.',
+        url: 'https://www.cisco.com/c/en/us/support/docs/cx/cisco-iq/getting-started-guide/cx225778-cisco-iq-getting-started-guide.html'
+      },
+      {
+        id: 'faq',
+        title: 'Frequently Asked Questions',
+        owner: 'Cisco Docs',
+        category: 'Official Docs',
+        desc: 'CX225779 — Customer FAQ: platform, deployment, CX Cloud migration, privacy.',
+        url: 'https://www.cisco.com/c/en/us/support/docs/cx/cisco-iq/faq/cx225779-cisco-iq-frequently-asked-questions.html'
+      },
+      {
+        id: 'support-pdf',
+        title: 'Cisco Support Service Description',
+        owner: 'Cisco Legal',
+        category: 'Official Docs',
+        desc: 'Cisco Support service description PDF — support tier contract terms.',
+        url: 'https://www.cisco.com/c/dam/en_us/about/doing_business/legal/service_descriptions/docs/Cisco-Support.pdf'
+      },
+      {
+        id: 'cl-presentation',
+        title: 'Cisco Live Presentation',
+        owner: 'PSO CX',
+        category: 'Training',
+        desc: 'PSOCX-2008 Cisco Live Americas deck (SharePoint).',
+        url: 'https://cisco.sharepoint.com/:p:/r/sites/CiscoLiveAmericas/_layouts/15/Doc.aspx?sourcedoc=%7B5900214C-CABA-43A1-B788-97E0C778EACC%7D&file=PSOCX-2008_decca.pptx&action=edit&mobileredirect=true'
+      }
+    ];
+
+    const LEARN_STEPS = [
+      { id: 's1', label: 'Understand Cisco IQ positioning & value', desc: 'Read Overview and FAQ "What is Cisco IQ"' },
+      { id: 's2', label: 'Join the Global Webex Space', desc: 'Ensure access to IQ process support' },
+      { id: 's3', label: 'Browse APJC portal & Playbook', desc: 'Learn APJC-local process and resources' },
+      { id: 's4', label: 'Learn the four apps & support tiers', desc: 'Assets / Assessments / Support / AI Assistant + Basic/Standard/Signature' },
+      { id: 's5', label: 'Study deployment modes & IQ Link', desc: 'SaaS / On-Prem Tethered / Air-Gapped — collector optional but recommended' },
+      { id: 's6', label: 'Read Getting Started Guide — Onboarding', desc: 'Account creation, CX Cloud migration, login' },
+      { id: 's7', label: 'Read Getting Started — Admin 3-step journey', desc: 'Cloud products → service contracts → IQ Link' },
+      { id: 's8', label: 'Review APJC Dashboard metrics', desc: 'Peter Leung APJC Dashboard v1.3' },
+      { id: 's9', label: 'Explore Program Team Tableau view', desc: 'Eran global Scale & Human-in-the-Loop' },
+      { id: 's10', label: 'Deep dive FAQ: CX Cloud migration & privacy', desc: 'Migration rules, data privacy, AI inference handling' }
+    ];
+
+    const FAQ_DATA = [
+      { tag: 'General', q: 'What is Cisco IQ?', a: 'Cisco IQ is the customer-facing, AI-powered experience connecting the full customer journey with Cisco Services. It unifies real-time insights, assessments, troubleshooting, learning, automation, and the AI Assistant. Available via SaaS (On-Prem coming soon) at no extra cost for customers with a valid Support contract.' },
+      { tag: 'General', q: 'Which customers will have access?', a: 'All customers with a valid Cisco Support contract. Professional Services customers will gain access in the future. Features vary by support tier (Basic / Standard / Signature).' },
+      { tag: 'General', q: 'Key Cisco IQ applications?', a: 'Assets (dynamic inventory), Assessments (security advisories & hardening), Support (case management), AI Assistant (conversational queries & analysis).' },
+      { tag: 'Deployment', q: 'Deployment options?', a: 'SaaS (cloud-first, lightweight on-prem IQ Link bridge), On-Prem Tethered (local data + cloud updates), On-Prem Air-Gapped (fully offline, manual updates).' },
+      { tag: 'Deployment', q: 'What is Cisco IQ Link?', a: 'VM software deployed on the customer on-prem network for device discovery and telemetry. Connects to Catalyst Center. IQ Connector is the collection component inside Link.' },
+      { tag: 'Deployment', q: 'Is collector required?', a: 'No. Initial inventory can be built from contract data alone. Advanced analytics need IQ Link or direct product telemetry. IQ Link is recommended for optimal AI insights.' },
+      { tag: 'Deployment', q: 'Cost for Cisco IQ?', a: 'No additional cost. Cisco IQ is included for all customers with a valid Support contract.' },
+      { tag: 'CX Cloud', q: 'Will CX Cloud customers migrate?', a: 'Yes. Only Account Admins can migrate; one CX Cloud account per migration. If you create a new IQ account without migrating first, CX Cloud data cannot be migrated later.' },
+      { tag: 'CX Cloud', q: 'CX Cloud vs Cisco IQ?', a: 'Cisco IQ is the next-gen unified AI interface with richer insights, assessments, and AI Assistant. CX Cloud will transition over time — see official FAQ for comparison use cases.' },
+      { tag: 'Privacy', q: 'PII sent to LLM during inference?', a: 'Cisco implements safeguards to prevent PII and sensitive data from being sent to the LLM during inference. See FAQ Data Collection and Privacy section.' },
+      { tag: 'Privacy', q: 'Are prompts stored or used for training?', a: 'Refer to the official FAQ on AI Assistant inference and data handling for details.' },
+      { tag: 'Integration', q: 'Integrates with Catalyst Center / Intersight?', a: 'Yes. Cisco IQ connects to Catalyst Center, Intersight, Meraki Dashboard, Nexus Dashboard, and more. Cloud-managed products do not require IQ Link.' },
+      { tag: 'Integration', q: 'Will APIs be supported?', a: 'API support is planned. Future delivery via API, ITSM, Webex, and other channels.' },
+      { tag: 'General', q: 'Replace architecture-specific dashboards?', a: 'No. The vision is to surface the same CX insights wherever customers work — product dashboards, their own apps, or Cisco IQ.' },
+      { tag: 'General', q: 'How long to see assets after adding contracts?', a: 'Assets typically appear shortly after contracts are added (timing depends on contract data processing — see official FAQ).' },
+      { tag: 'General', q: 'Cisco IQ vs Cisco AI Canvas?', a: 'Cisco IQ focuses on the CX services journey (support, assets, assessments). AI Canvas is a broader AI collaboration platform. Different positioning — see FAQ.' }
+    ];
+
+    const STORAGE_KEYS = {
+      learn: 'cisco-iq-learn-progress-en',
+      notes: 'cisco-iq-notes-en',
+      favorites: 'cisco-iq-favorites-en'
+    };
+
+    function getFavorites() {
+      try { return JSON.parse(localStorage.getItem(STORAGE_KEYS.favorites) || '[]'); }
+      catch { return []; }
+    }
+
+    function setFavorites(ids) {
+      localStorage.setItem(STORAGE_KEYS.favorites, JSON.stringify(ids));
+    }
+
+    function toggleFavorite(id) {
+      const favs = getFavorites();
+      const idx = favs.indexOf(id);
+      if (idx >= 0) favs.splice(idx, 1);
+      else favs.push(id);
+      setFavorites(favs);
+      renderLinks();
+      renderFavorites();
+      renderHomeQuickLinks();
+    }
+
+    function isFavorited(id) {
+      return getFavorites().includes(id);
+    }
+
+    function renderLinkCard(link, compact) {
+      const starred = isFavorited(link.id);
+      return `
+        <div class="card" data-link-id="${link.id}">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start">
+            <h3>${link.title}</h3>
+            <button class="link-star ${starred ? 'favorited' : ''}" onclick="toggleFavorite('${link.id}')" title="Favorite">★</button>
+          </div>
+          <div class="meta">${link.category} · ${link.owner}</div>
+          <p>${link.desc}</p>
+          <div class="card-actions">
+            <a class="btn btn-primary" href="${link.url}" target="_blank" rel="noopener">Open Link</a>
+            <button class="btn btn-ghost" onclick="navigator.clipboard.writeText('${link.url.replace(/'/g, "\\'")}')">Copy URL</button>
+          </div>
+        </div>`;
+    }
+
+    function renderLinks() {
+      const byCategory = {};
+      LINKS.forEach(l => {
+        if (!byCategory[l.category]) byCategory[l.category] = [];
+        byCategory[l.category].push(l);
+      });
+      let html = '';
+      Object.entries(byCategory).forEach(([cat, links]) => {
+        html += `<div class="section-title">${cat}</div><div class="grid-2">`;
+        links.forEach(l => { html += renderLinkCard(l); });
+        html += '</div>';
+      });
+      document.getElementById('linkCards').innerHTML = html;
+    }
+
+    function renderHomeQuickLinks() {
+      const priority = LINKS.filter(l => l.priority);
+      document.getElementById('homeQuickLinks').innerHTML = priority.map(renderLinkCard).join('');
+    }
+
+    function renderFavorites() {
+      const favs = getFavorites();
+      const el = document.getElementById('favoritesList');
+      if (!favs.length) {
+        el.innerHTML = '<div class="card"><p>No favorites yet. Star links on the Quick Links page to save them here.</p></div>';
+        return;
+      }
+      el.innerHTML = favs.map(id => {
+        const link = LINKS.find(l => l.id === id);
+        return link ? renderLinkCard(link) : '';
+      }).join('');
+    }
+
+    function getLearnProgress() {
+      try { return JSON.parse(localStorage.getItem(STORAGE_KEYS.learn) || '{}'); }
+      catch { return {}; }
+    }
+
+    function setLearnProgress(data) {
+      localStorage.setItem(STORAGE_KEYS.learn, JSON.stringify(data));
+      updateProgressUI();
+    }
+
+    function updateProgressUI() {
+      const progress = getLearnProgress();
+      const done = LEARN_STEPS.filter(s => progress[s.id]).length;
+      const pct = Math.round((done / LEARN_STEPS.length) * 100);
+      document.getElementById('progressFill').style.width = pct + '%';
+      document.getElementById('learnProgress').textContent = pct + '%';
+    }
+
+    function renderLearnChecklist() {
+      const progress = getLearnProgress();
+      document.getElementById('learnChecklist').innerHTML = LEARN_STEPS.map(step => `
+        <label class="check-item ${progress[step.id] ? 'done' : ''}">
+          <input type="checkbox" ${progress[step.id] ? 'checked' : ''} onchange="toggleLearnStep('${step.id}', this.checked)">
+          <div>
+            <div class="check-label">${step.label}</div>
+            <div class="check-desc">${step.desc}</div>
+          </div>
+        </label>
+      `).join('');
+      updateProgressUI();
+    }
+
+    function toggleLearnStep(id, checked) {
+      const progress = getLearnProgress();
+      progress[id] = checked;
+      setLearnProgress(progress);
+      renderLearnChecklist();
+    }
+
+    function renderFAQ() {
+      document.getElementById('faqList').innerHTML = FAQ_DATA.map((item, i) => `
+        <div class="faq-item" data-faq-idx="${i}">
+          <button class="faq-q" onclick="toggleFaq(this)">
+            <span><span class="faq-tag">${item.tag}</span>${item.q}</span>
+            <span class="chevron">▼</span>
+          </button>
+          <div class="faq-a">${item.a}</div>
+        </div>
+      `).join('');
+    }
+
+    function toggleFaq(btn) {
+      btn.closest('.faq-item').classList.toggle('open');
+    }
+
+    function renderDocs() {
+      const docs = LINKS.filter(l => l.category === 'Official Docs' || l.id === 'getting-started' || l.id === 'faq');
+      document.getElementById('docLinks').innerHTML = docs.map(renderLinkCard).join('');
+    }
+
+    function initNotes() {
+      const area = document.getElementById('notesArea');
+      area.value = localStorage.getItem(STORAGE_KEYS.notes) || '';
+      let timer;
+      area.addEventListener('input', () => {
+        clearTimeout(timer);
+        timer = setTimeout(() => localStorage.setItem(STORAGE_KEYS.notes, area.value), 400);
+      });
+    }
+
+    function navigate(panel) {
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.panel === panel));
+      document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + panel));
+      document.querySelector('.sidebar').classList.remove('open');
+    }
+
+    document.querySelectorAll('.nav-item').forEach(btn => {
+      btn.addEventListener('click', () => navigate(btn.dataset.panel));
+    });
+
+    function buildSearchIndex() {
+      const index = [];
+      LINKS.forEach(l => index.push({ type: 'Link', title: l.title, snippet: l.desc, action: () => { navigate('links'); closeSearch(); } }));
+      FAQ_DATA.forEach((f, i) => index.push({ type: 'FAQ', title: f.q, snippet: f.a, action: () => { navigate('faq'); closeSearch(); setTimeout(() => { document.querySelectorAll('.faq-item')[i]?.classList.add('open'); document.querySelectorAll('.faq-item')[i]?.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 100); } }));
+      LEARN_STEPS.forEach(s => index.push({ type: 'Learning', title: s.label, snippet: s.desc, action: () => { navigate('learn'); closeSearch(); } }));
+      return index;
+    }
+
+    const searchIndex = buildSearchIndex();
+
+    function doSearch(query) {
+      if (!query.trim()) { closeSearch(); return; }
+      const q = query.toLowerCase();
+      const hits = searchIndex.filter(item =>
+        item.title.toLowerCase().includes(q) || item.snippet.toLowerCase().includes(q)
+      );
+      const el = document.getElementById('searchHits');
+      if (!hits.length) {
+        el.innerHTML = '<p style="color:var(--text-muted)">No matching results.</p>';
+      } else {
+        el.innerHTML = hits.map(h => `
+          <div class="search-hit" onclick="(${h.action.toString()})()">
+            <div class="hit-type">${h.type}</div>
+            <div class="hit-title">${h.title}</div>
+            <div class="hit-snippet">${h.snippet.slice(0, 120)}…</div>
+          </div>
+        `).join('');
+      }
+      document.getElementById('searchResults').classList.add('visible');
+    }
+
+    function closeSearch() {
+      document.getElementById('searchResults').classList.remove('visible');
+      document.getElementById('globalSearch').value = '';
+    }
+
+    document.getElementById('globalSearch').addEventListener('input', e => doSearch(e.target.value));
+    document.getElementById('globalSearch').addEventListener('keydown', e => { if (e.key === 'Escape') closeSearch(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSearch(); });
+
+    renderHomeQuickLinks();
+    renderLinks();
+    renderLearnChecklist();
+    renderFAQ();
+    renderDocs();
+    renderFavorites();
+    initNotes();
+  </script>
+</body>
+</html>
